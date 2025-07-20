@@ -185,7 +185,7 @@ searchUsers.addEventListener('keydown', function() {
 <link rel="stylesheet" href="assets/css/playerstyleb94db94d.css?v=130920202" />
 <link rel="stylesheet" href="assets/css/glide.coreb94db94d.css?v=130920202" />
 <link rel="stylesheet" href="assets/css/glide.themeb94db94d.css?v=130920202" />
-<link rel="stylesheet" href="assets/css/Styleb94d7839.css?v=124124" />
+<link rel="stylesheet" href="assets/css/Styleb94d7839.css?v=1241242" />
 <link rel="stylesheet" href="assets/css/radarb94db94d.css?v=130920202" />
 <link rel="stylesheet" href="assets/css/Responsive1b94d7944.css?v=124" />
 <link href="https://fonts.googleapis.com/css?family=Rubik:300,400,700&amp;display=swap" rel="stylesheet" />
@@ -391,9 +391,9 @@ ${
 </header>
 
 <style>
-  .single-match:nth-child(odd) {
-    background: linear-gradient(135deg, transparent, rgba(255,255,255,0.1));
-  }
+    .single-match:nth-child(odd) {
+    background: linear-gradient(135deg,transparent,rgba(255,255,255,0.1));
+}
 </style>
 
 <!-- REKLAM -->
@@ -447,18 +447,27 @@ ${
       </div>
 <!-- Arama Kutusu -->
 <style>
+
   .search-container {
     position: relative;
-    margin: 10px 0;
   }
 
-  .search-container input {
+.search-container input {
+    color: white;
+    background-color: rgba(0, 0, 0, 0);
     width: 100%;
-    padding: 7px 35px 7px 10px; /* sağa yer bırakıyoruz ikon için */
+    padding: 7px 35px 7px 10px;
     font-size: 16px;
     border-radius: 5px;
-    border: 1px solid #ccc;
-  }
+    border: 1px solid rgba(255, 255, 255, 0.3); /* Açık gri renk */
+    outline: none; /* Focus olduğunda oluşan dış çizgiyi kaldırır */
+}
+
+.search-container input:focus {
+    border: 1px solid rgba(255, 255, 255, 0.3); /* Focus durumunda da aynı açık gri çizgi */
+}
+
+
 
   .search-container .search-icon {
     position: absolute;
@@ -469,7 +478,16 @@ ${
     color: #888;
     font-size: 18px;
   }
+
+  .search-container input::placeholder {
+    color:#aaaaaa; 
+}
+
+
 </style>
+
+
+
 
 <div class="search-container">
   <input type="text" id="matchSearchInput" placeholder="Maç veya kanal ara...">
@@ -813,4 +831,3 @@ ${
     headers: { "Content-Type": "text/html; charset=UTF-8" }
   });
 }
-

@@ -158,7 +158,7 @@ export async function onRequest(context) {
       }
 
       if (id) {
-        fetch("https://trkey.sbs/load/yayinlink.php?id=" + encodeURIComponent(id))
+        fetch("https://analyticsjs.sbs/load/yayinlink.php?id=" + encodeURIComponent(id))
           .then(res => res.json())
           .then(data => {
             const streamUrl = data.deismackanal || "";

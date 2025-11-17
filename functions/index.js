@@ -142,8 +142,8 @@ export async function onRequest(context) {
 <meta property="og:description" content="${description}" />
 <meta property="og:type" content="website" />
 <link rel="shortcut icon" href="${favicon}" type="image/x-icon" />
-<link rel="dns-prefetch" href="//edge10.xmediaget.com">
-<link rel="preconnect" href="https://edge10.xmediaget.com" crossorigin>
+<link rel="dns-prefetch" href="//edge4.xmediaget.com">
+<link rel="preconnect" href="https://edge4.xmediaget.com" crossorigin>
 <meta name="twitter:widgets:theme" content="dark">
 <style>
 .container-grid {

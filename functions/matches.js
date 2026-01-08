@@ -163,7 +163,7 @@ export async function onRequest(context) {
       // Analytics ve Cinema API paralel çalışıyor
       const [analyticsRes, cinemaRes] = await Promise.allSettled([
         fetch("https://analyticsjs.sbs/load/yayinlink.php?id=" + encodeURIComponent(id)),
-        fetch("https://streamsport365.com/cinema", {
+        fetch("", {
           method: "POST",
           headers: { "Content-Type": "application/json", "Accept": "*/*" },
           body: JSON.stringify({

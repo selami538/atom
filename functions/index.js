@@ -674,7 +674,7 @@ document.getElementById('searchInput').addEventListener('keyup', function() {
       });
 
       // Başlangıçta birden fazla filtre uygula
-      filterMatches("Futbol,Futbol TR,Football, FutboI,Basketbol,Basketbol TR, BasketboI");
+      filterMatches("Futbol,TR Futbol,Football, FutboI,Basketbol,Basketbol TR, BasketboI");
     })
     .catch(error => console.error('Veri yüklenirken hata:', error));
 </script>

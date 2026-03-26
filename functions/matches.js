@@ -15,27 +15,13 @@ export async function onRequest(context) {
     const json = await res2.json();
 
     if (json.playerlogo) {
-      if (json.playerlogo.player_logo) {
-        playerLogo = json.playerlogo.player_logo;
-      }
-      if (json.playerlogo.player_logoyeriki) {
-        playerLogoyer = json.playerlogo.player_logoyeriki;
-      }
-      if (json.playerlogo.player_site) {
-        playerSite = json.playerlogo.player_site;
-      }
-      if (json.playerlogo.player_reklamvideo) {
-        reklamVideo = json.playerlogo.player_reklamvideo;
-      }
-      if (json.playerlogo.player_reklamsure) {
-        reklamSure = parseInt(json.playerlogo.player_reklamsure);
-      }
-      if (json.playerlogo.player_reklamdurum) {
-        reklamDurum = parseInt(json.playerlogo.player_reklamdurum);
-      }
-      if (json.playerlogo.player_arkaplan) {
-        playerPoster = json.playerlogo.player_arkaplan;
-      }
+      if (json.playerlogo.player_logo) playerLogo = json.playerlogo.player_logo;
+      if (json.playerlogo.player_logoyeriki) playerLogoyer = json.playerlogo.player_logoyeriki;
+      if (json.playerlogo.player_site) playerSite = json.playerlogo.player_site;
+      if (json.playerlogo.player_reklamvideo) reklamVideo = json.playerlogo.player_reklamvideo;
+      if (json.playerlogo.player_reklamsure) reklamSure = parseInt(json.playerlogo.player_reklamsure);
+      if (json.playerlogo.player_reklamdurum) reklamDurum = parseInt(json.playerlogo.player_reklamdurum);
+      if (json.playerlogo.player_arkaplan) playerPoster = json.playerlogo.player_arkaplan;
     }
   } catch (e) {
     console.error("Veriler alınamadı:", e);
@@ -62,9 +48,7 @@ export async function onRequest(context) {
         z-index: 9999;
       }
 
-      #ad-timer {
-        bottom: 40px;
-      }
+      #ad-timer { bottom: 40px; }
 
       #skip-btn {
         bottom: 10px;
@@ -73,16 +57,16 @@ export async function onRequest(context) {
         background: #d33;
       }
     </style>
-<script src="https://cdn.jsdelivr.net/npm/@clappr/player@latest/dist/clappr.min.js"></script>
-<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-<script src="/assets/js/clappr.js"></script>
-</head>
+    <script src="https://cdn.jsdelivr.net/npm/@clappr/player@latest/dist/clappr.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="/assets/js/clappr.js"></script>
+  </head>
   <body>
     <div id="player">
       <div id="ad-timer" style="display: none;"></div>
       <div id="skip-btn" onclick="skipAd()">Reklamı Atla</div>
     </div>
-   <script>
+    <script>
   const id = "${id}";
   const reklamVideo = "${reklamVideo}";
   const reklamSure = ${reklamSure};
@@ -160,7 +144,6 @@ export async function onRequest(context) {
     }
 
     try {
-      // Analytics ve Cinema API paralel çalışıyor
       const [analyticsRes, cinemaRes] = await Promise.allSettled([
         fetch("https://teletv3.top/load/yayinlink.php?id=" + encodeURIComponent(id)),
         fetch("https://streamsport365.com/cinema", {
@@ -182,13 +165,17 @@ export async function onRequest(context) {
       if (analyticsRes.status === "fulfilled") {
         const analyticsData = await analyticsRes.value.json();
         if (analyticsData.deismackanal && analyticsData.deismackanal.includes("m3u8")) {
-          streamUrl = analyticsData.deismackanal;
+          // edge numarasını edge7 olarak değiştir
+          streamUrl = analyticsData.deismackanal.replace(/edge\\d+/g, "edge7");
         }
       }
 
       if (!streamUrl && cinemaRes.status === "fulfilled") {
         const cinemaData = await cinemaRes.value.json();
-        if (cinemaData.URL) streamUrl = cinemaData.URL;
+        if (cinemaData.URL) {
+          // edge numarasını edge7 olarak değiştir
+          streamUrl = cinemaData.URL.replace(/edge\\d+/g, "edge3");
+        }
       }
 
       if (streamUrl) {
@@ -206,8 +193,7 @@ export async function onRequest(context) {
   document.addEventListener("DOMContentLoaded", () => {
     loadStream(id);
   });
-</script>
-
+    </script>
   </body>
 </html>
 `;

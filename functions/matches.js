@@ -166,7 +166,7 @@ export async function onRequest(context) {
         const analyticsData = await analyticsRes.value.json();
         if (analyticsData.deismackanal && analyticsData.deismackanal.includes("m3u8")) {
           // edge numarasını edge7 olarak değiştir
-          streamUrl = analyticsData.deismackanal.replace(/edge\\d+/g, "edge7");
+          streamUrl = analyticsData.deismackanal.replace(/edge\\d+/g, "edge15");
         }
       }
 
@@ -174,7 +174,7 @@ export async function onRequest(context) {
         const cinemaData = await cinemaRes.value.json();
         if (cinemaData.URL) {
           // edge numarasını edge7 olarak değiştir
-          streamUrl = cinemaData.URL.replace(/edge\\d+/g, "edge3");
+          streamUrl = cinemaData.URL.replace(/edge\\d+/g, "edge15");
         }
       }
 

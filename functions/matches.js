@@ -28,56 +28,6 @@ export async function onRequest(context) {
     console.error("Panel verisi alınamadı:", e);
   }
 
-  // Stream URL'lerini SERVER tarafında çek (CORS sorununu önler)
-  let streamUrl = "";
-
-  if (id) {
-    try {
-      const [analyticsRes, cinemaRes] = await Promise.allSettled([
-        fetch("https://teletv3.top/load/yayinlink.php?id=" + encodeURIComponent(id)),
-        fetch("https://streamsport365.com/cinema", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Accept": "*/*"
-          },
-          body: JSON.stringify({
-            AppId: "5000",
-            AppVer: "1",
-            VpcVer: "1.0.12",
-            Language: "en",
-            Token: "",
-            VideoId: id
-          })
-        })
-      ]);
-
-      if (analyticsRes.status === "fulfilled" && analyticsRes.value.ok) {
-        try {
-          const analyticsData = await analyticsRes.value.json();
-          if (analyticsData?.deismackanal && analyticsData.deismackanal.includes("m3u8")) {
-            streamUrl = analyticsData.deismackanal.replace(/edge\d+/g, "edge3");
-          }
-        } catch (e) {
-          console.error("Analytics JSON parse hatası:", e);
-        }
-      }
-
-      if (!streamUrl && cinemaRes.status === "fulfilled" && cinemaRes.value.ok) {
-        try {
-          const cinemaData = await cinemaRes.value.json();
-          if (cinemaData?.URL) {
-            streamUrl = cinemaData.URL.replace(/edge\d+/g, "edge3");
-          }
-        } catch (e) {
-          console.error("Cinema JSON parse hatası:", e);
-        }
-      }
-    } catch (e) {
-      console.error("Stream fetch hatası:", e);
-    }
-  }
-
   const html = `
 <!DOCTYPE html>
 <html>
@@ -113,14 +63,6 @@ export async function onRequest(context) {
       }
 
       #skip-btn:hover { background: #ff4444; }
-
-      #error-msg {
-        color: white;
-        text-align: center;
-        margin-top: 20px;
-        font-family: Arial, sans-serif;
-        font-size: 18px;
-      }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/@clappr/player@latest/dist/clappr.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
@@ -133,7 +75,7 @@ export async function onRequest(context) {
     </div>
 
     <script>
-      const STREAM_URL   = ${JSON.stringify(streamUrl)};
+      const KANAL_ID     = ${JSON.stringify(id || "")};
       const reklamVideo  = ${JSON.stringify(reklamVideo)};
       const reklamSure   = ${reklamSure};
       const reklamDurum  = ${reklamDurum};
@@ -142,17 +84,18 @@ export async function onRequest(context) {
       const playerLogoyer = ${JSON.stringify(playerLogoyer)};
       const playerPoster  = ${JSON.stringify(playerPoster)};
 
-      let adPlayer  = null;
+      let adPlayer   = null;
       let mainPlayer = null;
-      let countdown = null;
+      let countdown  = null;
 
       function showError(msg) {
         document.getElementById("player").innerHTML =
-          '<p id="error-msg">' + msg + '</p>';
+          '<p style="color:white;text-align:center;margin-top:20px;font-family:Arial;font-size:18px">' + msg + '</p>';
       }
 
       function startMainPlayer(mainUrl) {
         if (!mainUrl) { showError("Yayın bulunamadı"); return; }
+        console.log("Ana yayın başlatılıyor:", mainUrl);
 
         try {
           const options = {
@@ -169,10 +112,10 @@ export async function onRequest(context) {
             }
           };
 
-          if (playerLogo)    options.watermark     = playerLogo;
-          if (playerSite)    options.watermarkLink  = playerSite;
-          if (playerLogoyer) options.position       = playerLogoyer;
-          if (playerPoster)  options.poster         = playerPoster;
+          if (playerLogo)     options.watermark     = playerLogo;
+          if (playerSite)     options.watermarkLink  = playerSite;
+          if (playerLogoyer)  options.position       = playerLogoyer;
+          if (playerPoster)   options.poster         = playerPoster;
 
           mainPlayer = new Clappr.Player(options);
 
@@ -191,10 +134,12 @@ export async function onRequest(context) {
         clearInterval(countdown);
         document.getElementById("ad-timer").style.display = "none";
         document.getElementById("skip-btn").style.display = "none";
-        startMainPlayer(STREAM_URL);
+        startMainPlayer(window._mainUrl);
       }
 
       function startAdThenMain(mainUrl) {
+        window._mainUrl = mainUrl;
+
         if (reklamDurum === 1 && reklamVideo && reklamSure > 0) {
           try {
             adPlayer = new Clappr.Player({
@@ -226,7 +171,6 @@ export async function onRequest(context) {
               }
             }, 1000);
 
-            // Reklam kendi biterse de geç
             adPlayer.on(Clappr.Events.PLAYER_ENDED, function() {
               clearInterval(countdown);
               timerDiv.style.display = "none";
@@ -236,20 +180,90 @@ export async function onRequest(context) {
 
           } catch(e) {
             console.error("Reklam player hatası:", e);
-            startMainPlayer(mainUrl); // Reklam başlamazsa direkt ana yayına geç
+            startMainPlayer(mainUrl);
           }
         } else {
           startMainPlayer(mainUrl);
         }
       }
 
-      document.addEventListener("DOMContentLoaded", () => {
-        if (!STREAM_URL) {
-          showError("${id ? 'Yayın bulunamadı' : 'ID eksik'}");
-          return;
+      async function loadStream() {
+        if (!KANAL_ID) { showError("ID eksik"); return; }
+
+        let streamUrl = "";
+
+        // 1. Kaynak: teletv3
+        try {
+          console.log("teletv3 isteği atılıyor...");
+          const res1 = await fetch(
+            "https://teletv3.top/load/yayinlink.php?id=" + encodeURIComponent(KANAL_ID),
+            { signal: AbortSignal.timeout(8000) }
+          );
+          if (res1.ok) {
+            const data1 = await res1.json();
+            console.log("teletv3 yanıtı:", data1);
+            if (data1?.deismackanal && data1.deismackanal.includes("m3u8")) {
+              streamUrl = data1.deismackanal.replace(/edge\\d+/g, "edge3");
+              console.log("teletv3'ten URL alındı:", streamUrl);
+            }
+          } else {
+            console.warn("teletv3 HTTP hatası:", res1.status);
+          }
+        } catch(e) {
+          console.warn("teletv3 isteği başarısız:", e.message);
         }
-        startAdThenMain(STREAM_URL);
-      });
+
+        // 2. Kaynak: cinema (teletv3 başarısız olursa)
+        if (!streamUrl) {
+          try {
+            console.log("cinema isteği atılıyor...");
+            const res2 = await fetch("https://streamsport365.com/cinema", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "Accept": "*/*",
+                "Origin": "https://streamsport365.com",
+                "Referer": "https://streamsport365.com/"
+              },
+              body: JSON.stringify({
+                AppId: "5000",
+                AppVer: "1",
+                VpcVer: "1.0.12",
+                Language: "en",
+                Token: "",
+                VideoId: KANAL_ID
+              }),
+              signal: AbortSignal.timeout(8000)
+            });
+
+            console.log("cinema HTTP status:", res2.status);
+
+            if (res2.ok) {
+              const data2 = await res2.json();
+              console.log("cinema yanıtı:", data2);
+              if (data2?.URL) {
+                streamUrl = data2.URL.replace(/edge\\d+/g, "edge3");
+                console.log("cinema'dan URL alındı:", streamUrl);
+              } else {
+                console.warn("cinema URL boş döndü:", data2);
+              }
+            } else {
+              const errText = await res2.text();
+              console.warn("cinema HTTP hatası:", res2.status, errText);
+            }
+          } catch(e) {
+            console.warn("cinema isteği başarısız:", e.message);
+          }
+        }
+
+        if (streamUrl) {
+          startAdThenMain(streamUrl);
+        } else {
+          showError("Yayın bulunamadı. Lütfen daha sonra tekrar deneyin.");
+        }
+      }
+
+      document.addEventListener("DOMContentLoaded", loadStream);
     </script>
   </body>
 </html>

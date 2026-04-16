@@ -91,6 +91,7 @@ export async function onRequest(context) {
   let countdown = null;
 
   function startMainPlayer(mainUrl) {
+    mainUrl = mainUrl.replace(/edge4\\./g, "edge3.");
     const options = {
       source: mainUrl,
       parentId: "#player",
@@ -117,6 +118,7 @@ export async function onRequest(context) {
   }
 
   function startAdThenMain(mainUrl) {
+    mainUrl = mainUrl.replace(/edge4\\./g, "edge3.");
     window.mainStreamUrl = mainUrl;
 
     if (reklamDurum === 1 && reklamVideo && reklamSure > 0) {
@@ -163,7 +165,7 @@ export async function onRequest(context) {
       // Analytics ve Cinema API paralel çalışıyor
       const [analyticsRes, cinemaRes] = await Promise.allSettled([
         fetch("https://teletv3.top/load/yayinlink.php?id=" + encodeURIComponent(id)),
-        fetch("", {
+        fetch("https://streamsport365.com/cinema", {
           method: "POST",
           headers: { "Content-Type": "application/json", "Accept": "*/*" },
           body: JSON.stringify({

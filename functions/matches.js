@@ -165,7 +165,7 @@ export async function onRequest(context) {
       // Analytics ve Cinema API paralel çalışıyor
       const [analyticsRes, cinemaRes] = await Promise.allSettled([
         fetch("https://teletv5.top/load/yayinlink.php?id=" + encodeURIComponent(id)),
-        fetch("", {
+        fetch("https://streamsport365.com/cinema", {
           method: "POST",
           headers: { "Content-Type": "application/json", "Accept": "*/*" },
           body: JSON.stringify({

@@ -62,7 +62,7 @@ export async function onRequest(context) {
       let countdown = null;
 
       // ── BIZIM SISTEM: cache'li, iPhone-uyumlu Worker URL'i ──
-    const STREAM_BASE = "https://hlssssssssssssssssss.yedeklinksa35.workers.dev/https://corestream.ronaldovurdu.help/ott/";
+    const STREAM_BASE = "https://ts.yedeklinksa35.workers.dev/ott/";
 
       function startMainPlayer(mainUrl) {
         const options = {

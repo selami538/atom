@@ -15,27 +15,13 @@ export async function onRequest(context) {
     const json = await res2.json();
 
     if (json.playerlogo) {
-      if (json.playerlogo.player_logo) {
-        playerLogo = json.playerlogo.player_logo;
-      }
-      if (json.playerlogo.player_logoyeriki) {
-        playerLogoyer = json.playerlogo.player_logoyeriki;
-      }
-      if (json.playerlogo.player_site) {
-        playerSite = json.playerlogo.player_site;
-      }
-      if (json.playerlogo.player_reklamvideo) {
-        reklamVideo = json.playerlogo.player_reklamvideo;
-      }
-      if (json.playerlogo.player_reklamsure) {
-        reklamSure = parseInt(json.playerlogo.player_reklamsure);
-      }
-      if (json.playerlogo.player_reklamdurum) {
-        reklamDurum = parseInt(json.playerlogo.player_reklamdurum);
-      }
-      if (json.playerlogo.player_arkaplan) {
-        playerPoster = json.playerlogo.player_arkaplan;
-      }
+      if (json.playerlogo.player_logo) playerLogo = json.playerlogo.player_logo;
+      if (json.playerlogo.player_logoyeriki) playerLogoyer = json.playerlogo.player_logoyeriki;
+      if (json.playerlogo.player_site) playerSite = json.playerlogo.player_site;
+      if (json.playerlogo.player_reklamvideo) reklamVideo = json.playerlogo.player_reklamvideo;
+      if (json.playerlogo.player_reklamsure) reklamSure = parseInt(json.playerlogo.player_reklamsure);
+      if (json.playerlogo.player_reklamdurum) reklamDurum = parseInt(json.playerlogo.player_reklamdurum);
+      if (json.playerlogo.player_arkaplan) playerPoster = json.playerlogo.player_arkaplan;
     }
   } catch (e) {
     console.error("Veriler alınamadı:", e);
@@ -46,7 +32,9 @@ export async function onRequest(context) {
 <html>
   <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
+      * { box-sizing: border-box; }
       body { margin: 0; padding: 0; background: #000; }
       #player { width: 100%; height: 100vh; position: relative; }
 
@@ -62,9 +50,7 @@ export async function onRequest(context) {
         z-index: 9999;
       }
 
-      #ad-timer {
-        bottom: 40px;
-      }
+      #ad-timer { bottom: 40px; }
 
       #skip-btn {
         bottom: 10px;
@@ -72,144 +58,179 @@ export async function onRequest(context) {
         cursor: pointer;
         background: #d33;
       }
+
+      #loading-screen {
+        position: absolute;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background: #000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9998;
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      #loading-screen .spinner {
+        width: 48px; height: 48px;
+        border: 4px solid #333;
+        border-top-color: #fff;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+      }
+
+      #loading-screen p {
+        color: #aaa;
+        font-family: Arial, sans-serif;
+        font-size: 14px;
+        margin: 0;
+      }
+
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
     </style>
-<script src="https://cdn.jsdelivr.net/npm/@clappr/player@latest/dist/clappr.min.js"></script>
-<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-<script src="/assets/js/clappr.js"></script>
-</head>
+    <script src="https://cdn.jsdelivr.net/npm/@clappr/player@latest/dist/clappr.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="/assets/js/clappr.js"></script>
+  </head>
   <body>
     <div id="player">
-      <div id="ad-timer" style="display: none;"></div>
+      <div id="loading-screen">
+        <div class="spinner"></div>
+        <p>Yayın yükleniyor...</p>
+      </div>
+      <div id="ad-timer" style="display:none;"></div>
       <div id="skip-btn" onclick="skipAd()">Reklamı Atla</div>
     </div>
-   <script>
-  const id = "${id}";
-  const reklamVideo = "${reklamVideo}";
-  const reklamSure = ${reklamSure};
-  const reklamDurum = ${reklamDurum};
-  let adPlayer = null;
-  let countdown = null;
 
-  function startMainPlayer(mainUrl) {
-    mainUrl = mainUrl.replace(/edge4\\./g, "edge3.");
-    const options = {
-      source: mainUrl,
-      parentId: "#player",
-      autoPlay: true,
-      width: "100%",
-      height: "100%",
-      mimeType: "application/x-mpegURL"
-    };
+    <script>
+      const id = "${id}";
+      const reklamVideo = "${reklamVideo}";
+      const reklamSure = ${reklamSure};
+      const reklamDurum = ${reklamDurum};
 
-    ${playerLogo ? `options.watermark = "${playerLogo}";` : ""}
-    ${playerSite ? `options.watermarkLink = "${playerSite}";` : ""}
-    ${playerLogoyer ? `options.position = "${playerLogoyer}";` : ""}
-    ${playerPoster ? `options.poster = "${playerPoster}";` : ""}
+      // ✅ Worker URL — burası güncellendi
+      const WORKER_URL = "https://ahbe.yedeklinksa35.workers.dev/stream";
 
-    new Clappr.Player(options);
-  }
+      let adPlayer = null;
+      let countdown = null;
 
-  function skipAd() {
-    if (adPlayer) adPlayer.destroy();
-    clearInterval(countdown);
-    document.getElementById("ad-timer").style.display = "none";
-    document.getElementById("skip-btn").style.display = "none";
-    startMainPlayer(window.mainStreamUrl);
-  }
+      function hideLoading() {
+        const el = document.getElementById("loading-screen");
+        if (el) el.style.display = "none";
+      }
 
-  function startAdThenMain(mainUrl) {
-    mainUrl = mainUrl.replace(/edge4\\./g, "edge3.");
-    window.mainStreamUrl = mainUrl;
+      function showError(msg) {
+        hideLoading();
+        document.body.innerHTML = "<h2 style='color:white;text-align:center;margin-top:20px'>" + msg + "</h2>";
+      }
 
-    if (reklamDurum === 1 && reklamVideo && reklamSure > 0) {
-      adPlayer = new Clappr.Player({
-        source: reklamVideo,
-        parentId: "#player",
-        autoPlay: true,
-        width: "100%",
-        height: "100%"
-      });
+      function startMainPlayer(mainUrl) {
+        mainUrl = mainUrl.replace(/edge4\./g, "edge3.");
+        hideLoading();
 
-      const timerDiv = document.getElementById("ad-timer");
-      const skipBtn = document.getElementById("skip-btn");
+        const options = {
+          source: mainUrl,
+          parentId: "#player",
+          autoPlay: true,
+          width: "100%",
+          height: "100%",
+          mimeType: "application/x-mpegURL"
+        };
 
-      let remaining = reklamSure;
-      timerDiv.style.display = "block";
-      timerDiv.innerText = "Reklamın bitmesine kalan süre: " + remaining + " saniye";
+        ${playerLogo ? `options.watermark = "${playerLogo}";` : ""}
+        ${playerSite ? `options.watermarkLink = "${playerSite}";` : ""}
+        ${playerLogoyer ? `options.position = "${playerLogoyer}";` : ""}
+        ${playerPoster ? `options.poster = "${playerPoster}";` : ""}
 
-      countdown = setInterval(() => {
-        remaining--;
-        if (remaining <= 0) {
-          clearInterval(countdown);
-          adPlayer.destroy();
-          timerDiv.style.display = "none";
-          skipBtn.style.display = "none";
-          startMainPlayer(mainUrl);
-        } else {
+        new Clappr.Player(options);
+      }
+
+      function skipAd() {
+        if (adPlayer) adPlayer.destroy();
+        clearInterval(countdown);
+        document.getElementById("ad-timer").style.display = "none";
+        document.getElementById("skip-btn").style.display = "none";
+        startMainPlayer(window.mainStreamUrl);
+      }
+
+      function startAdThenMain(mainUrl) {
+        mainUrl = mainUrl.replace(/edge4\./g, "edge3.");
+        window.mainStreamUrl = mainUrl;
+
+        if (reklamDurum === 1 && reklamVideo && reklamSure > 0) {
+          hideLoading();
+
+          adPlayer = new Clappr.Player({
+            source: reklamVideo,
+            parentId: "#player",
+            autoPlay: true,
+            width: "100%",
+            height: "100%"
+          });
+
+          const timerDiv = document.getElementById("ad-timer");
+          const skipBtn = document.getElementById("skip-btn");
+
+          let remaining = reklamSure;
+          timerDiv.style.display = "block";
           timerDiv.innerText = "Reklamın bitmesine kalan süre: " + remaining + " saniye";
-          if (remaining <= reklamSure - 5) skipBtn.style.display = "block";
-        }
-      }, 1000);
-    } else {
-      startMainPlayer(mainUrl);
-    }
-  }
 
-  async function loadStream(id) {
-    if (!id) {
-      document.body.innerHTML = "<h2 style='color:white;text-align:center;margin-top:20px'>ID eksik</h2>";
-      return;
-    }
+          countdown = setInterval(() => {
+            remaining--;
+            if (remaining <= 0) {
+              clearInterval(countdown);
+              adPlayer.destroy();
+              timerDiv.style.display = "none";
+              skipBtn.style.display = "none";
+              startMainPlayer(mainUrl);
+            } else {
+              timerDiv.innerText = "Reklamın bitmesine kalan süre: " + remaining + " saniye";
+              if (remaining <= reklamSure - 5) skipBtn.style.display = "block";
+            }
+          }, 1000);
 
-    try {
-      // Analytics ve Cinema API paralel çalışıyor
-      const [analyticsRes, cinemaRes] = await Promise.allSettled([
-        fetch("https://teletv5.top/load/yayinlink.php?id=" + encodeURIComponent(id)),
-        fetch("https://streamsport365.com/cinema", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "Accept": "*/*" },
-          body: JSON.stringify({
-            AppId: "5000",
-            AppVer: "1",
-            VpcVer: "1.0.12",
-            Language: "en",
-            Token: "",
-            VideoId: id
-          })
-        })
-      ]);
-
-      let streamUrl = "";
-
-      if (analyticsRes.status === "fulfilled") {
-        const analyticsData = await analyticsRes.value.json();
-        if (analyticsData.deismackanal && analyticsData.deismackanal.includes("m3u8")) {
-          streamUrl = analyticsData.deismackanal;
+        } else {
+          startMainPlayer(mainUrl);
         }
       }
 
-      if (!streamUrl && cinemaRes.status === "fulfilled") {
-        const cinemaData = await cinemaRes.value.json();
-        if (cinemaData.URL) streamUrl = cinemaData.URL;
+      async function loadStream(id) {
+        if (!id) {
+          showError("ID eksik");
+          return;
+        }
+
+        try {
+          // ✅ Artık Worker üzerinden gidiyor — cache + rate limit koruması var
+          const res = await fetch(WORKER_URL + "?id=" + encodeURIComponent(id));
+
+          if (!res.ok) {
+            showError("Yayın bulunamadı");
+            return;
+          }
+
+          const data = await res.json();
+
+          if (data.url) {
+            console.log("Stream source:", data.source, "| Cache:", data.cache);
+            startAdThenMain(data.url);
+          } else {
+            showError("Yayın bulunamadı");
+          }
+
+        } catch (err) {
+          console.error("Yayın yüklenirken hata:", err);
+          showError("Yayın hatası");
+        }
       }
 
-      if (streamUrl) {
-        startAdThenMain(streamUrl);
-      } else {
-        document.body.innerHTML = "<h2 style='color:white;text-align:center;margin-top:20px'>Yayın bulunamadı</h2>";
-      }
-
-    } catch (err) {
-      console.error("Yayın yüklenirken hata:", err);
-      document.body.innerHTML = "<h2 style='color:white;text-align:center;margin-top:20px'>Yayın hatası</h2>";
-    }
-  }
-
-  document.addEventListener("DOMContentLoaded", () => {
-    loadStream(id);
-  });
-</script>
-
+      document.addEventListener("DOMContentLoaded", () => {
+        loadStream(id);
+      });
+    </script>
   </body>
 </html>
 `;

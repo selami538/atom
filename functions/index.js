@@ -11,7 +11,7 @@ export async function onRequest(context) {
     return Response.redirect(redirectUrl, 301);
   }
 
-  const apiUrl = "https://origin.altinoksoft.com/api/verirepo.php";
+  const apiUrl = "https://atom.corepanel.pro/api/verirepo.php";
 
   let json = {};
   try {
@@ -27,7 +27,7 @@ export async function onRequest(context) {
 
   // ===== TEMA 0 veya 1 -> PHP hosting'e proxy =====
   if (aktifTema === 0 || aktifTema === 1) {
-    const phpUrl = "https://origin.altinoksoft.com" + url.pathname + url.search;
+    const phpUrl = "https://atom.corepanel.pro" + url.pathname + url.search;
 
     const phpRequest = new Request(phpUrl, {
       method: request.method,

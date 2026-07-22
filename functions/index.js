@@ -40,8 +40,26 @@ export async function onRequest(context) {
   }
 
   // ===== TEMA 2 (ve diğerleri) -> Pages'in kendi HTML'i =====
-  const nextDomain = hostname.replace(/(\d+)(?!.*\d)/, (match) => {
-    return String(parseInt(match) + 1);
+  // Hesabı Pages proje adresinden değil, ziyaret edilen gerçek alan adından yap.
+  const hostAdaylari = [
+    request.headers.get("x-forwarded-host"),
+    request.headers.get("host"),
+    hostname
+  ]
+    .filter(Boolean)
+    .map(host => String(host).split(",")[0].trim().replace(/:\d+$/, ""));
+
+  const gercekDomain = hostAdaylari.find(host => {
+    return !/(?:^|\.)pages\.dev$/i.test(host)
+      && !/(?:^|\.)workers\.dev$/i.test(host)
+      && /\d/.test(host);
+  });
+
+  const publicHostname = (gercekDomain || hostname).replace(/^www\./i, "");
+
+  // Gerçek alan adındaki son sayı otomatik olarak bir artırılır.
+  const nextDomain = publicHostname.replace(/(\d+)(?!.*\d)/, (match) => {
+    return String(parseInt(match, 10) + 1);
   });
 
   const ayar = json?.ayar || {};
@@ -164,7 +182,7 @@ export async function onRequest(context) {
     : [];
 
   const params = {
-    hostname,
+    hostname: publicHostname,
     nextDomain,
     macKapa:      parseInt(ayar.ayar_macackapa ?? 0) === 1,
     title:        ayar.ayar_title || "",

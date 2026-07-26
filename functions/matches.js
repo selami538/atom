@@ -20,8 +20,8 @@ export async function onRequest(context) {
   try {
 
     const res2 = await fetch("https://atomspor.corepanel.pro/api/verirepo.php", {
-  cf: { cacheTtl: 60, cacheEverything: true }
-});
+      cf: { cacheTtl: 60, cacheEverything: true }
+    });
 
     const json = await res2.json();
 
@@ -36,7 +36,7 @@ export async function onRequest(context) {
       if (json.playerlogo.player_site) {
         playerSite = json.playerlogo.player_site;
       }
-// Buton verileri
+      // Buton verileri
       if (json.playerlogo.player_telegram) {
         playerTelegram = json.playerlogo.player_telegram;
       }
@@ -120,8 +120,6 @@ export async function onRequest(context) {
 
       #player { width: 100%; height: 100vh; position: relative; }
 
-
-
       /* YAYIN EKRANI KÜÇÜLMESİN: Clappr player ve video her zaman tam boy */
 
       #player [data-player] {
@@ -141,7 +139,8 @@ export async function onRequest(context) {
         object-fit: fill; /* Görüntüyü kesmez ve siyah boşluk bırakmaz (görüntüyü alana göre esnetir) */
 
       }
-/* ============================================== */
+
+      /* ============================================== */
       /* PLAYER ÜSTÜ BUTONLAR                           */
       /* NOT: Tam ekranda butonlar Clappr player'ın     */
       /* içine taşınıyor ve Clappr'ın kendi CSS'i bizim */
@@ -254,8 +253,6 @@ export async function onRequest(context) {
         #player-buttons .p-ico-tg { width: 14px !important; height: 14px !important; }
       }
 
-      
-
       /* Üstteki kırmızı çizgi/bar */
 
       #player [data-player] [data-border],
@@ -265,8 +262,6 @@ export async function onRequest(context) {
         display: none !important;
 
       }
-
-
 
       /* Sadece SEEK (ilerleme) çizgisini gizle — ses barına dokunma */
 
@@ -281,8 +276,6 @@ export async function onRequest(context) {
         display: none !important;
 
       }
-
-
 
       /* Ses çizgisi görünür kalsın (garanti olsun diye geri açıyoruz) */
 
@@ -312,20 +305,24 @@ export async function onRequest(context) {
 
       <!-- Butonlar -->
       <div id="player-buttons">${butonlarHtml}</div>
-</div>
+
+    </div>
 
     <script>
 
       const id = "${id}";
 
-
-
-
-
       let mainPlayer = null;
 
-
-
+      // ============================================
+      // HATA / RETRY AYARLARI
+      // Error code 3 vb. hatalarda sayfayı yenilemeden
+      // player'ı otomatik yeniden başlatmak için.
+      // ============================================
+      let sonUrl = "";
+      let retrySayisi = 0;
+      const MAX_RETRY = 10;        // En fazla kaç kez denesin
+      const RETRY_BEKLEME = 2000;  // Denemeler arası bekleme (ms)
 
       // ============================================
       // TAM EKRAN DÜZELTMESİ:
@@ -362,11 +359,10 @@ export async function onRequest(context) {
       document.addEventListener("fullscreenchange", tamEkranButonDuzelt);
       document.addEventListener("webkitfullscreenchange", tamEkranButonDuzelt);
 
-
-
       function startMainPlayer(mainUrl) {
 
         mainUrl = mainUrl.replace(/edge4\\./g, "edge3.");
+        sonUrl = mainUrl;
 
         const options = {
 
@@ -384,11 +380,11 @@ export async function onRequest(context) {
 
           height: "100%",
 
-          mimeType: "application/x-mpegURL"
+          mimeType: "application/x-mpegURL",
+
+          playback: { playInline: true } // iOS: video native tam ekrana zorla atlamasın
 
         };
-
-
 
         ${playerLogo ? `options.watermark = "${playerLogo}";` : ""}
 
@@ -396,15 +392,38 @@ export async function onRequest(context) {
 
         ${playerLogoyer ? `options.position = "${playerLogoyer}";` : ""}
 
-
-
         mainPlayer = new Clappr.Player(options);
 
+        // ============================================
+        // HATA YAKALA (error code 3 dahil):
+        // Sayfa yenilemeden player'ı yıkıp yeniden kur.
+        // ============================================
+        mainPlayer.on(Clappr.Events.PLAYER_ERROR, function(err) {
 
+          console.warn("Player hatası, yeniden deneniyor:", err);
+
+          if (retrySayisi >= MAX_RETRY) {
+            console.error("Maksimum deneme sayısına ulaşıldı.");
+            return;
+          }
+          retrySayisi++;
+
+          setTimeout(function() {
+            try {
+              if (mainPlayer) mainPlayer.destroy();
+            } catch (e) {}
+            mainPlayer = null;
+            startMainPlayer(sonUrl);
+          }, RETRY_BEKLEME);
+
+        });
 
         // Yayın oynamaya başlayınca player boyutunu tazele
 
         mainPlayer.on(Clappr.Events.PLAYER_PLAY, function() {
+
+          // Başarıyla oynadıysa retry sayacını sıfırla
+          retrySayisi = 0;
 
           // Tarayıcı veya önceki player sessiz bıraktıysa sesi geri aç.
           if (typeof mainPlayer.unmute === "function") {
@@ -418,17 +437,16 @@ export async function onRequest(context) {
 
         });
 
-
-
-        // Pencere boyutu değişince player'ı da uydur
-
-        window.addEventListener("resize", function() {
-
-          if (mainPlayer) mainPlayer.resize({ width: "100%", height: "100%" });
-
-        });
-
       }
+
+      // Pencere boyutu değişince player'ı da uydur
+      // (Bir kez bağlanır; retry'da tekrar tekrar eklenmesin diye
+      // startMainPlayer'ın dışında.)
+      window.addEventListener("resize", function() {
+
+        if (mainPlayer) mainPlayer.resize({ width: "100%", height: "100%" });
+
+      });
 
       async function loadStream(id) {
 
@@ -439,8 +457,6 @@ export async function onRequest(context) {
           return;
 
         }
-
-
 
         try {
 
@@ -474,11 +490,7 @@ export async function onRequest(context) {
 
           ]);
 
-
-
           let streamUrl = "";
-
-
 
           if (analyticsRes.status === "fulfilled") {
 
@@ -492,8 +504,6 @@ export async function onRequest(context) {
 
           }
 
-
-
           if (!streamUrl && cinemaRes.status === "fulfilled") {
 
             const cinemaData = await cinemaRes.value.json();
@@ -501,8 +511,6 @@ export async function onRequest(context) {
             if (cinemaData.URL) streamUrl = cinemaData.URL;
 
           }
-
-
 
           if (streamUrl) {
 
@@ -514,8 +522,6 @@ export async function onRequest(context) {
 
           }
 
-
-
         } catch (err) {
 
           console.error("Yayın yüklenirken hata:", err);
@@ -525,8 +531,6 @@ export async function onRequest(context) {
         }
 
       }
-
-
 
       document.addEventListener("DOMContentLoaded", () => {
 
@@ -541,8 +545,6 @@ export async function onRequest(context) {
 </html>
 
 `;
-
-
 
   return new Response(html, {
 

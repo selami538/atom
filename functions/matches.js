@@ -291,11 +291,9 @@ export async function onRequest(context) {
 
     </style>
 
-    <script src="https://cdn.jsdelivr.net/npm/@clappr/player@latest/dist/clappr.min.js"></script>
-
-    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-
-    <script src="/assets/js/clappr.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@clappr/player@0.11.16/dist/clappr.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@clappr/hlsjs-playback@1.8.3/dist/hlsjs-playback.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/level-selector/dist/level-selector.min.js"></script>
 
   </head>
 
@@ -364,26 +362,31 @@ export async function onRequest(context) {
         mainUrl = mainUrl.replace(/edge4\\./g, "edge3.");
         sonUrl = mainUrl;
 
-        const options = {
-
+      const options = {
           source: mainUrl,
-
           parentId: "#player",
-
           autoPlay: true,
-
           mute: false,
-
           volume: 100,
-
           width: "100%",
-
           height: "100%",
-
           mimeType: "application/x-mpegURL",
-
-          playback: { playInline: true } // iOS: video native tam ekrana zorla atlamasın
-
+          disableVideoTagContextMenu: true, // iOS/Android'de videoya uzun basınca çıkan menüyü engeller
+          playback: {
+            playInline: true,
+            html5Video: {
+              attributes: {
+                "playsinline": true,
+                "webkit-playsinline": true,
+                "disablepictureinpicture": true // PiP modunu kapatarak native oynatıcı tetiklenmesini azaltır
+              }
+            }
+          },
+          hlsjsConfig: {
+            // Android ve PC'de (hls.js kullanan cihazlarda) canlı yayın geçmişini (DVR) ezer
+            liveSyncDurationCount: 2,
+            liveMaxLatencyDurationCount: 4
+          }
         };
 
         ${playerLogo ? `options.watermark = "${playerLogo}";` : ""}

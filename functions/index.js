@@ -512,8 +512,8 @@ ${reklam5 ? `<div style="max-width:100%;margin:0 auto;text-align:center;">${href
 <div class="player-channel-area" style="width:100%;">
 <div class="live-list radarOn" style="width:100%;">
 <div class="head-grid" style="display:flex;justify-content:center;align-items:center;width:100%;">
-<div class="t2-tab active" id="live-tab" style="flex:1;text-align:center;"><div class="list-blink"></div><span>Maçlar</span></div>
-<div class="t2-tab" id="next-tab" style="flex:1;text-align:center;"><div class="list-blink"></div><span>Kanallar</span></div>
+<div class="t2-tab active" id="live-tab" style="flex:1;text-align:center;"><div class="list-blink"></div><span><i class="fas fa-futbol tab-icon"></i> Maçlar</span></div>
+<div class="t2-tab" id="next-tab" style="flex:1;text-align:center;"><div class="list-blink"></div><span><i class="fas fa-tv tab-icon"></i> Kanallar</span></div>
 </div>
 <div class="search-container">
 <input type="text" id="matchSearchInput" placeholder="Maç veya kanal ara...">

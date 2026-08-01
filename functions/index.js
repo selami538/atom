@@ -57,7 +57,7 @@ export async function onRequest(context) {
 
   const publicHostname = (gercekDomain || hostname).replace(/^www\./i, "");
 
-  // Gerçek alan adındaki son sayı otomatik olarak bir artırılır.
+  // Örnek: alanadi67.guru -> alanadi68.guru
   const nextDomain = publicHostname.replace(/(\d+)(?!.*\d)/, (match) => {
     return String(parseInt(match, 10) + 1);
   });
@@ -218,6 +218,12 @@ export async function onRequest(context) {
     hrefreklam5:  ayar.ayar_alt2 || "",
     reklam6:      ayar.ayar_reklam4 || "",
     hrefreklam6:  ayar.ayar_footerlink || "",
+    reklampmobil:      ayar.ayar_reklammobil || "",
+    reklampmobilac:      ayar.ayar_mobilpageskin || "",
+    listereklam:      ayar.ayar_reklamliste || "",
+    listereklamlink:  ayar.ayar_listelink || "",
+     textreklam:      ayar.ayar_textreklam || "",
+    textreklamlink:      ayar.ayar_textreklamlink || "",
 
     matchesUrl:   "https://teletv5.top/load/matches.php",
     channelsUrl:  "https://teletv5.top/load/channels.php",
@@ -246,7 +252,8 @@ function getTema2Html(params) {
     favicon, amp, ampAktif, canlisonuc, twitter, telegram, facebook, instagram, youtube,
     headerapi, bodyapi, footerapi, analyticsapi, apilinkcikisi, pageskincolor,
     footermetin, reklam1, reklam2, reklam3, reklam4, reklam5, reklam6,
-    hrefreklam1, hrefreklam2, hrefreklam4, hrefreklam5, hrefreklam6,
+    hrefreklam1, hrefreklam2, hrefreklam4, hrefreklam5, hrefreklam6, reklampmobil, reklampmobilac, textreklam, textreklamlink,
+    listereklam, listereklamlink,
     hrefpageskin, menuler, matchesUrl, channelsUrl, kanallar, macKapa
   } = params;
 
@@ -446,6 +453,56 @@ function getTema2Html(params) {
     min-height: 450px;
   }
 }
+      /* --- MOBİL ÜST BANNER --- */
+        .mobile-top-banner {
+            display: none;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            position: relative;
+            z-index: 10;
+        }
+
+        .mobile-top-banner img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .mobile-top-banner {
+                display: block;
+            }
+        }
+
+/* --- MAC LISTESI ARASI REKLAM --- */
+.channel-ad-item { display: block; padding: 6px 0; }
+.channel-ad-item a { display: block; }
+.channel-ad-item img { display: block; width: 100%; height: auto; border-radius: 4px; }
+
+        .hellobar {
+    background: var(--bg-glass);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    color: #fff;
+    text-align: center;
+    padding: 1rem 1.5rem;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    max-width: 1100px;
+    width: 100%;
+    margin: 1.5rem 0;
+    border-radius: var(--border-radius);
+    border: 1px solid rgba(6, 182, 212, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    position: relative;
+    overflow: visible;
+}
+body {
+    background: ${pageskincolor};
+}
 </style>
 ${headerapi}
 ${analyticsapi}
@@ -455,6 +512,17 @@ ${hrefpageskin
 ${ampAktif && amp ? `<link rel="amphtml" href="${amp}">` : ''}
 </head>
 <body>
+${reklampmobil ? `
+    <div class="mobile-top-banner">
+        ${reklampmobilac ? `
+            <a href="${reklampmobilac}" target="_blank" rel="noopener noreferrer">
+                <img src="${reklampmobil}" alt="Mobile Banner" width="550" height="190" fetchpriority="high">
+            </a>
+        ` : `
+            <img src="${reklampmobil}" alt="Mobile Banner" width="550" height="190" fetchpriority="high">
+        `}
+    </div>
+` : ''}
 ${bodyapi}
 <div class="header-top">
 <div class="header-text">
@@ -484,6 +552,13 @@ ${menuler.map(menu => `<li class="blink"><a href="${menu.url}" target="_self"><i
 
 ${reklam1 ? `<div style="margin:10px;text-align:center;">${hrefreklam1 ? `<a href="${hrefreklam1}" target="_blank"><img class="ads-img" src="${reklam1}" width="100%"/></a>` : `<img class="ads-img" src="${reklam1}" width="100%"/>`}</div>` : ''}
 ${reklam4 ? `<div style="margin:10px;text-align:center;">${hrefreklam4 ? `<a href="${hrefreklam4}" target="_blank"><img class="ads-img" src="${reklam4}" width="100%"/></a>` : `<img class="ads-img" src="${reklam4}" width="100%"/>`}</div>` : ''}
+${textreklam ? `
+    <div class="hellobar">
+        ${textreklamlink
+            ? `<a href="${textreklamlink}" target="_blank" rel="noopener noreferrer">${textreklam}</a>`
+            : `<span>${textreklam}</span>`}
+    </div>
+` : ''}
 <div class="container-grid player-grid">
 <center>
 <div class="live-player" data-loadbalancer="1" data-loadbalancerdomain="osflare.work">
@@ -585,6 +660,9 @@ document.addEventListener('DOMContentLoaded', function () {
           ? 'flex'
           : 'none';
       });
+
+      // Arama sonrasi reklamlari gorunur maclara gore yeniden diz
+      if (window.reklamlariYerlestir) window.reklamlariYerlestir();
     });
   }
 
@@ -665,12 +743,65 @@ fetch('${matchesUrl}')
       });
     }
 
+    // ================= LISTE ARASI REKLAMLAR =================
+    // Gorsel ve link panelden (Reklam Ayarlari > Mac Listesi Arasi Reklam)
+    const listeGorsel = ${JSON.stringify(listereklam || "")};
+    const listeLink   = ${JSON.stringify(listereklamlink || "")};
+
+    // Ayni gorsel 1. ve 2. mactan sonra gosterilir
+    const listeReklamlari = listeGorsel
+      ? [{ sira: 1 }, { sira: 2 }].map(r => ({ sira: r.sira, gorsel: listeGorsel, link: listeLink }))
+      : [];
+
+    window.reklamlariYerlestir = function () {
+      const kap = document.getElementById('matches-content');
+      if (!kap) return;
+
+      // Onceki reklamlari temizle
+      kap.querySelectorAll('.channel-ad-item').forEach(el => el.remove());
+
+      if (!listeReklamlari.length) return;
+
+      // Sadece gorunur maclari say
+      const gorunur = Array.prototype.filter.call(
+        kap.querySelectorAll('.single-match'),
+        el => el.style.display !== 'none'
+      );
+
+      listeReklamlari.forEach(r => {
+        const hedef = gorunur[r.sira - 1];
+        if (!hedef) return;
+
+        const div = document.createElement('div');
+        div.className = 'channel-ad-item';
+
+        const img = document.createElement('img');
+        img.src = r.gorsel;
+        img.alt = 'Reklam';
+        img.loading = 'lazy';
+
+        if (r.link) {
+          const a = document.createElement('a');
+          a.href = r.link;
+          a.target = '_blank';
+          a.rel = 'noopener noreferrer';
+          a.appendChild(img);
+          div.appendChild(a);
+        } else {
+          div.appendChild(img);
+        }
+
+        hedef.after(div);
+      });
+    };
+
     function filterMatches(categoryStr) {
       const filters = categoryStr.split(',').map(f => f.trim().toLowerCase());
       document.querySelectorAll("#matches-content .single-match").forEach(match => {
         const type = (match.getAttribute("data-matchtype") || "").toLowerCase();
         match.style.display = filters.includes(type) ? "flex" : "none";
       });
+      window.reklamlariYerlestir();
     }
     document.querySelectorAll('.menu-item').forEach(item => {
       item.addEventListener('click', function () {

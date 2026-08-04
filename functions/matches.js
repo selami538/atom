@@ -19,7 +19,7 @@ export async function onRequest(context) {
 
   try {
 
-    const res2 = await fetch("https://atomspor.corepanel.pro/api/verirepo.php", {
+    const res2 = await fetch("https://atomspor.corepanel1.pro/api/verirepo.php", {
       cf: { cacheTtl: 60, cacheEverything: true }
     });
 

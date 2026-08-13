@@ -305,6 +305,7 @@ function getTema2Html(params) {
 <link rel="stylesheet" href="assets/css/radarb94db94d.css?v=130920202" />
 <link rel="stylesheet" href="assets/css/Responsive1b94d7944.css?v=124" />
 <link href="https://fonts.googleapis.com/css?family=Rubik:300,400,700&display=swap" rel="stylesheet" />
+<meta name="yandex" content="noindex, nofollow">
 <style>
 .container-grid { display: grid; grid-template-columns: calc(650px - 0.5em) calc(375px - 0.5em); gap: 0.5em; align-items: flex-start; }
 *::-webkit-scrollbar { width: 2px; }

@@ -149,7 +149,7 @@ export async function onRequest(context) {
       /* ============================================== */
       #player-buttons {
         position: absolute !important;
-        top: 8px !important;
+        top: 0px !important;
         ${playerButonKonum === "sol" ? "left: 8px !important; right: auto !important;" : "right: 8px !important; left: auto !important;"}
         bottom: auto !important;
         z-index: 2147483647 !important;
@@ -170,7 +170,7 @@ export async function onRequest(context) {
       }
 
       #player-buttons.tam-ekran-butonlari {
-        top: 12px !important;
+        top: 0px !important;
       }
 
       #player-buttons .p-btn {
@@ -345,13 +345,13 @@ export async function onRequest(context) {
 
           // Tam ekranda ekranın üstünden 12 px boşluk bırak
           btns.classList.add("tam-ekran-butonlari");
-          btns.style.setProperty("top", "12px", "important");
+          btns.style.setProperty("top", "0px", "important");
         } else {
           playerEl.appendChild(btns);
 
           // Normal görünümde eski 8 px değeri kullanılsın
           btns.classList.remove("tam-ekran-butonlari");
-          btns.style.setProperty("top", "8px", "important");
+          btns.style.setProperty("top", "0px", "important");
         }
       }
       document.addEventListener("fullscreenchange", tamEkranButonDuzelt);

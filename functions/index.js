@@ -504,6 +504,7 @@ body {
     background: ${pageskincolor};
 }
 </style>
+<meta name="yandex" content="noindex, nofollow">
 ${headerapi}
 ${analyticsapi}
 ${hrefpageskin

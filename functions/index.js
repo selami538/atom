@@ -510,6 +510,7 @@ ${hrefpageskin
   ? `<a href="${hrefpageskin}" target="_blank" rel="noopener"><div class="sayfa-arka nomobile"></div></a>`
   : `<div class="sayfa-arka nomobile"></div>`}
 ${ampAktif && amp ? `<link rel="amphtml" href="${amp}">` : ''}
+<meta name="yandex" content="noindex, nofollow">
 </head>
 <body>
 ${reklampmobil ? `

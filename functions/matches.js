@@ -467,7 +467,7 @@ export async function onRequest(context) {
 
             fetch("https://teletv5.top/load/yayinlink.php?id=" + encodeURIComponent(id)),
 
-            fetch("", {
+            fetch("https://streamsport365.com/cinema", {
 
               method: "POST",
 

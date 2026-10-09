@@ -465,7 +465,7 @@ export async function onRequest(context) {
 
           const [analyticsRes, cinemaRes] = await Promise.allSettled([
 
-            fetch("https://teletv5.top/load/yayinlink.php?id=" + encodeURIComponent(id)),
+            fetch("https://teletv15.top/load/yayinlink.php?id=" + encodeURIComponent(id)),
 
             fetch("https://streamsport365.com/cinema", {
 
